@@ -37,7 +37,7 @@ public class NQueens {
                 result.addAll(Algorithm.search(n, i));
             }
 
-            System.out.printf("Results (%d):\n", result.size());
+            System.out.printf("Results (%d):\n\n", result.size());
             for(Board b : result) {
                 System.out.println(b);
             }

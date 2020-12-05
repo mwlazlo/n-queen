@@ -68,7 +68,7 @@ public class Board {
      */
     public boolean placeQueen(int row, int col) {
 
-        if (isSquareCovered(row, col)) {
+        if (isSquareCovered(row, col) || placeFormsRow(row, col)) {
             return false;
         }
 
@@ -78,7 +78,6 @@ public class Board {
 
         occupyXYSpace(row, col);
         occupyDiagonalSpace(row, col);
-
 
         return true;
     }
@@ -126,6 +125,67 @@ public class Board {
     }
 
     /**
+     * Given a coordinate, check that 2 or more other queens already on the board create a vector
+     *
+     * @param row
+     * @param col
+     * @return
+     */
+    private boolean placeFormsRow(int row, int col) {
+
+        if (queensPlaced < 2) {
+            return false;
+        }
+
+        // determine if any 3 points make a vector by calculating the area of the triangle they form.
+        // generate sets of points
+        for (int q1Idx = 0; q1Idx < boardSize; q1Idx++) {
+            if (queens[q1Idx] == -1) {
+                continue;
+            }
+
+            // alias point 1
+            int row1 = q1Idx;
+            int col1 = queens[q1Idx];
+
+            for (int q2Idx = q1Idx + 1; q2Idx < boardSize; q2Idx++) {
+                if (queens[q2Idx] == -1) {
+                    continue;
+                }
+
+
+                // alias point 2
+                int row2 = q2Idx;
+                int col2 = queens[q2Idx];
+
+                if (collinear(row, col, row1, col1, row2, col2)) {
+                    log.debug("row detected placing queen at {}/{}:\n" +
+                                    "{}/{} <-> {}/{} <-> {}/{}\n{}", row, col,
+                            row2, col2, row1, col1, row, col, this.toString());
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Someone much smarter than me came up with this solution: https://stackoverflow.com/a/3813723/9825752
+     *
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @param x3
+     * @param y3
+     * @return true if slope of each sets of points matches
+     */
+    private boolean collinear(int x1, int y1, int x2, int y2, int x3, int y3) {
+        return (y1 - y2) * (x1 - x3) == (y1 - y3) * (x1 - x2);
+    }
+
+    /**
      * Checks if square at row/col is covered by another queen
      *
      * @param row
@@ -136,16 +196,15 @@ public class Board {
         return board[row][col];
     }
 
-
     /**
-     * Print out a nice ACII art chess board.
+     * Print out a nice ASCII art chess board.
      *
-     * @return a nice ACII art chess board.
+     * @return a nice ASCII art chess board.
      */
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        // row header
+        // column header
         sb.append("  ");
         for (int col = 0; col < boardSize; col++) {
             sb.append(col).append(" ");
@@ -153,7 +212,8 @@ public class Board {
         sb.append("\n");
 
         for (int row = 0; row < boardSize; row++) {
-            // column header
+
+            // row header
             sb.append(row).append(" ");
 
             // the actual row
