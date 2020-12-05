@@ -4,20 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Algorithm {
+
+    // size of board
     private final int boardSize;
 
+    /**
+     * Construct algorithm with boardSize
+     *
+     * @param boardSize size of board
+     */
     private Algorithm(int boardSize) {
         this.boardSize = boardSize;
     }
 
     /**
-     * @param n   size of board
-     * @param col starting column on row 0
-     * @return Board with final solution, if any
+     * Initiate the search for N Queens
+     *
+     * @param boardSize size of board
+     * @param col       starting column on row 0
+     * @return Boards with final solution, if any
      */
-    public static List<Board> search(int n, int col) throws SanityCheckException {
-        Algorithm algorithm = new Algorithm(n);
-        Board b = new Board(n);
+    public static List<Board> search(int boardSize, int col) throws SanityCheckException {
+        Algorithm algorithm = new Algorithm(boardSize);
+        Board b = new Board(boardSize);
 
         // place first queen at designated column
         b.placeQueen(0, col);

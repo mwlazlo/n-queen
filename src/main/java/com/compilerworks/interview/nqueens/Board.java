@@ -18,18 +18,13 @@ public class Board {
     // column position of queens, in row order
     private final int[] queens;
 
-    // keep a tally of how many queens on the board
-    private int queensPlaced = 0;
-
-    // row indexed (row, col) 2d array
+    // array representing board. Queen's attack square is represented by the value of the int.
+    // Each time a queen attacks a square, we increment that square by 1.
+    // This allows us to more easily remove a queen from the board compared to a boolean array.
     private final int[][] board;
 
-    /**
-     * interface to perform some operation on a board square (+/-)
-     */
-    private interface SquareOperation {
-        void operate(int row, int col);
-    }
+    // keep a tally of how many queens on the board
+    private int queensPlaced = 0;
 
     /**
      * Construct a board of size boardSize
@@ -63,12 +58,11 @@ public class Board {
         System.arraycopy(b.queens, 0, queens, 0, boardSize);
     }
 
-
     /**
      * Attempt to place a Queen at coordinate.
      *
-     * @param row
-     * @param col
+     * @param row the row coord
+     * @param col the col coord
      * @return true if queen could be placed on the board.
      */
     public boolean placeQueen(int row, int col) {
@@ -90,8 +84,8 @@ public class Board {
     /**
      * Remove Queen from coordinate.
      *
-     * @param row
-     * @param col
+     * @param row the row coord
+     * @param col the col coord
      */
     public void removeQueen(int row, int col) throws SanityCheckException {
 
@@ -106,15 +100,15 @@ public class Board {
         queens[row] = -1;
         queensPlaced--;
 
-        traverseXYSpace(row, col,  this::squareSub);
+        traverseXYSpace(row, col, this::squareSub);
         traverseDiagonalSpace(row, col, this::squareSub);
     }
 
     /**
      * Given a row/col coordinate, add or remove presence from the diagonal vectors covered by the queen from that coordinate.
      *
-     * @param row
-     * @param col
+     * @param row the row coord
+     * @param col the col coord
      */
     private void traverseDiagonalSpace(int row, int col, SquareOperation op) {
 
@@ -140,10 +134,10 @@ public class Board {
     }
 
     /**
-     * Given a row/col coordinate, occupy the perpendicular vectors covered by the queen from that coordinate.
+     * Given a row/col coordinate, occupy the perpendicular(?) vectors covered by the queen from that coordinate.
      *
-     * @param row
-     * @param col
+     * @param row the row coord
+     * @param col the col coord
      */
     private void traverseXYSpace(int row, int col, SquareOperation op) {
         for (int i = 0; i < boardSize; i++) {
@@ -160,8 +154,8 @@ public class Board {
     /**
      * Used as lambda for decrement a square
      *
-     * @param row
-     * @param col
+     * @param row the row coord
+     * @param col the col coord
      */
     private void squareSub(int row, int col) {
         board[row][col]--;
@@ -169,8 +163,9 @@ public class Board {
 
     /**
      * Used as lambda for incrementing a square
-     * @param row
-     * @param col
+     *
+     * @param row the row coord
+     * @param col the col coord
      */
     private void squareAdd(int row, int col) {
         board[row][col]++;
@@ -179,9 +174,9 @@ public class Board {
     /**
      * Given a coordinate, check that 2 or more other queens already on the board create a vector
      *
-     * @param row
-     * @param col
-     * @return
+     * @param row the row coord
+     * @param col the col coord
+     * @return true if this moves creates a vector with 2 other queens
      */
     private boolean placeFormsRow(int row, int col) {
 
@@ -190,23 +185,19 @@ public class Board {
         }
 
         // determine if any 3 points make a vector by calculating the area of the triangle they form.
-        // generate sets of points
         for (int q1Idx = 0; q1Idx < boardSize; q1Idx++) {
             if (queens[q1Idx] == -1) {
                 continue;
             }
-
-            // alias point 1
-            int row1 = q1Idx;
-            int col1 = queens[q1Idx];
 
             for (int q2Idx = q1Idx + 1; q2Idx < boardSize; q2Idx++) {
                 if (queens[q2Idx] == -1) {
                     continue;
                 }
 
-
-                // alias point 2
+                // alias points 1 & 2
+                int row1 = q1Idx;
+                int col1 = queens[q1Idx];
                 int row2 = q2Idx;
                 int col2 = queens[q2Idx];
 
@@ -225,12 +216,12 @@ public class Board {
     /**
      * Someone much smarter than me came up with this solution: https://stackoverflow.com/a/3813723/9825752
      *
-     * @param x1
-     * @param y1
-     * @param x2
-     * @param y2
-     * @param x3
-     * @param y3
+     * @param x1 row1 coord
+     * @param y1 col1 coord
+     * @param x2 row2 coord
+     * @param y2 col2 coord
+     * @param x3 row3 coord
+     * @param y3 col3 coord
      * @return true if slope of each sets of points matches
      */
     private boolean collinear(int x1, int y1, int x2, int y2, int x3, int y3) {
@@ -240,8 +231,8 @@ public class Board {
     /**
      * Checks if square at row/col is covered by another queen
      *
-     * @param row
-     * @param col
+     * @param row the row coord
+     * @param col the col coord
      * @return true if covered, false otherwise
      */
     private boolean isSquareCovered(int row, int col) {
@@ -285,9 +276,16 @@ public class Board {
     /**
      * queensPlaced getter
      *
-     * @return
+     * @return count of queens on board
      */
     public int getQueensPlaced() {
         return queensPlaced;
+    }
+
+    /**
+     * interface to perform some operation on a board square (+/-)
+     */
+    private interface SquareOperation {
+        void operate(int row, int col);
     }
 }

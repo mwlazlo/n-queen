@@ -13,6 +13,7 @@ import java.util.List;
  * References:
  * 1. https://en.wikipedia.org/wiki/Eight_queens_puzzle
  * 2. https://www.cs.utexas.edu/users/EWD/transcriptions/EWD03xx/EWD316.9.html
+ * 3. https://stackoverflow.com/a/3813723/9825752
  */
 public class NQueens {
     private static final Logger log = LogManager.getLogger(NQueens.class);
@@ -31,14 +32,13 @@ public class NQueens {
 
             stopWatch.start();
 
-            // Since there can be at most 1 queen per row, we simply start a number of threads
-            // from each column of first row.
+            // Since there can be at most 1 queen per row, we simply start from each column of first row.
             for (int i = 0; i < n; i++) {
                 result.addAll(Algorithm.search(n, i));
             }
 
             System.out.printf("Results (%d):\n\n", result.size());
-            for(Board b : result) {
+            for (Board b : result) {
                 System.out.println(b);
             }
 
