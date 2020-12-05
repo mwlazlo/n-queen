@@ -22,9 +22,14 @@ public class Board {
     private int queensPlaced = 0;
 
     // row indexed (row, col) 2d array
-    // NB: potential space optimisation, as described by Djikstra, use integer instead of boolean and
-    // increment/decrement on place/unplace queen. In this version we simply discard the unsolved board.
-    private final boolean[][] board;
+    private final int[][] board;
+
+    /**
+     * interface to perform some operation on a board square (+/-)
+     */
+    private interface SquareOperation {
+        void operate(int row, int col);
+    }
 
     /**
      * Construct a board of size boardSize
@@ -33,7 +38,7 @@ public class Board {
      */
     public Board(int boardSize) {
         this.boardSize = boardSize;
-        board = new boolean[boardSize][boardSize];
+        board = new int[boardSize][boardSize];
         queens = new int[boardSize];
 
         // initialise queens with invalid position
@@ -50,7 +55,7 @@ public class Board {
     public Board(Board b) {
         boardSize = b.boardSize;
         queensPlaced = b.queensPlaced;
-        board = new boolean[boardSize][boardSize];
+        board = new int[boardSize][boardSize];
         for (int row = 0; row < boardSize; row++) {
             System.arraycopy(b.board[row], 0, board[row], 0, boardSize);
         }
@@ -72,42 +77,65 @@ public class Board {
             return false;
         }
 
-        board[row][col] = true;
+        board[row][col]++;
         queens[row] = col;
         queensPlaced++;
 
-        occupyXYSpace(row, col);
-        occupyDiagonalSpace(row, col);
+        traverseXYSpace(row, col, this::squareAdd);
+        traverseDiagonalSpace(row, col, this::squareAdd);
 
         return true;
     }
 
     /**
-     * Given a row/col coordinate, occupy the diagonal vectors covered by the queen from that coordinate.
+     * Remove Queen from coordinate.
      *
      * @param row
      * @param col
      */
-    private void occupyDiagonalSpace(int row, int col) {
+    public void removeQueen(int row, int col) throws SanityCheckException {
+
+        if (board[row][col] != 1) {
+            log.error("Sanity check failed: removeQueen({}, {}) = {}",
+                    row, col, board[row][col]);
+            log.error("\n{}", this.toString());
+            throw new SanityCheckException("sanity check failed");
+        }
+
+        board[row][col]--;
+        queens[row] = -1;
+        queensPlaced--;
+
+        traverseXYSpace(row, col,  this::squareSub);
+        traverseDiagonalSpace(row, col, this::squareSub);
+    }
+
+    /**
+     * Given a row/col coordinate, add or remove presence from the diagonal vectors covered by the queen from that coordinate.
+     *
+     * @param row
+     * @param col
+     */
+    private void traverseDiagonalSpace(int row, int col, SquareOperation op) {
 
         // up/left
         for (int colUp = col - 1, rowLeft = row - 1; colUp >= 0 && rowLeft >= 0; colUp--, rowLeft--) {
-            board[rowLeft][colUp] = true;
+            op.operate(rowLeft, colUp);
         }
 
         // up/right
         for (int colUp = col - 1, rowRight = row + 1; colUp >= 0 && rowRight < boardSize; colUp--, rowRight++) {
-            board[rowRight][colUp] = true;
+            op.operate(rowRight, colUp);
         }
 
         // down/left
         for (int colDown = col + 1, rowLeft = row - 1; colDown < boardSize && rowLeft >= 0; colDown++, rowLeft--) {
-            board[rowLeft][colDown] = true;
+            op.operate(rowLeft, colDown);
         }
 
         // down/right
         for (int colDown = col + 1, rowRight = row + 1; colDown < boardSize && rowRight < boardSize; colDown++, rowRight++) {
-            board[rowRight][colDown] = true;
+            op.operate(rowRight, colDown);
         }
     }
 
@@ -117,11 +145,35 @@ public class Board {
      * @param row
      * @param col
      */
-    private void occupyXYSpace(int row, int col) {
+    private void traverseXYSpace(int row, int col, SquareOperation op) {
         for (int i = 0; i < boardSize; i++) {
-            board[row][i] = true;
-            board[i][col] = true;
+            // make sure to not +/- the queen's square again
+            if (col != i) {
+                op.operate(row, i);
+            }
+            if (row != i) {
+                op.operate(i, col);
+            }
         }
+    }
+
+    /**
+     * Used as lambda for decrement a square
+     *
+     * @param row
+     * @param col
+     */
+    private void squareSub(int row, int col) {
+        board[row][col]--;
+    }
+
+    /**
+     * Used as lambda for incrementing a square
+     * @param row
+     * @param col
+     */
+    private void squareAdd(int row, int col) {
+        board[row][col]++;
     }
 
     /**
@@ -193,7 +245,7 @@ public class Board {
      * @return true if covered, false otherwise
      */
     private boolean isSquareCovered(int row, int col) {
-        return board[row][col];
+        return board[row][col] > 0;
     }
 
     /**
@@ -221,7 +273,7 @@ public class Board {
                 if (queens[row] == col) {
                     sb.append("Q ");
                 } else {
-                    sb.append(board[row][col] ? "* " : ". ");
+                    sb.append(board[row][col] > 0 ? "* " : ". ");
                 }
             }
             sb.append("\n");

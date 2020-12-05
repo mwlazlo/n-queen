@@ -45,6 +45,11 @@ public class NQueens {
         } catch (NumberFormatException e) {
             log.error("invalid \"rows\" parameter, please enter an integer");
             System.exit(1);
+
+        } catch (SanityCheckException e) {
+            e.printStackTrace();
+            System.exit(1);
+
         } finally {
             if (stopWatch.isStarted()) {
                 stopWatch.stop();

@@ -11,12 +11,11 @@ class Algorithm {
     }
 
     /**
-     *
-     * @param n size of board
+     * @param n   size of board
      * @param col starting column on row 0
      * @return Board with final solution, if any
      */
-    public static List<Board> search(int n, int col) {
+    public static List<Board> search(int n, int col) throws SanityCheckException {
         Algorithm algorithm = new Algorithm(n);
         Board b = new Board(n);
 
@@ -30,23 +29,23 @@ class Algorithm {
      * Check each position in row for a solution. Recursively calls itself with next row
      *
      * @param board the board
-     * @param row the row
+     * @param row   the starting row
      * @return Boards with final solution, if any
      */
-    private List<Board> search(Board board, int row) {
+    private List<Board> search(Board board, int row) throws SanityCheckException {
         List<Board> rv = new ArrayList<>();
 
-        for(int col = 0; col < boardSize; col++) {
+        for (int col = 0; col < boardSize; col++) {
 
-            // clone board and try placing queen, discarding copy if it queen can't be placed...
-            Board next = new Board(board);
+            if (board.placeQueen(row, col)) {
 
-            if(next.placeQueen(row, col)) {
-                if (next.getQueensPlaced() == boardSize) {
-                    rv.add(next);
+                if (board.getQueensPlaced() == boardSize) {
+                    rv.add(new Board(board));
                 } else {
-                    rv.addAll(search(next, row + 1));
+                    rv.addAll(search(board, row + 1));
                 }
+
+                board.removeQueen(row, col);
             }
         }
         return rv;
