@@ -44,6 +44,10 @@ class Algorithm {
     private List<Board> search(Board board, int row) throws SanityCheckException {
         List<Board> rv = new ArrayList<>();
 
+        if (row >= boardSize) {
+            return rv;
+        }
+
         for (int col = 0; col < boardSize; col++) {
 
             if (board.placeQueen(row, col)) {
